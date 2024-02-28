@@ -1,0 +1,8 @@
+SELECT t1.dep AS Department, t1.name AS Employee, t1.salary AS Salary
+FROM (
+SELECT e.name, e.salary, DENSE_RANK() OVER (PARTITION BY d.id ORDER BY e.salary DESC) as rr, d.name as dep
+FROM Employee AS e, Department AS d
+WHERE e.departmentId = d.id
+) t1
+WHERE t1.rr <= 3
+GROUP BY t1.dep, t1.name ;
