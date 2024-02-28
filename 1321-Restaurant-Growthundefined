@@ -1,21 +1,14 @@
-SELECT visited_on, 
-    (
-        SELECT SUM(amount) 
-        FROM Customer 
-        WHERE visited_on BETWEEN DATE_SUB(c.visited_on, INTERVAL 6 DAY) 
-        AND c.visited_on 
-    ) AS amount, ROUND(
-        (
-           SELECT SUM(amount)/7 
-            FROM Customer 
-            WHERE visited_on BETWEEN DATE_SUB(c.visited_on, INTERVAL 6 DAY) 
-            AND c.visited_on 
-        ), 2
-    ) AS average_amount
-FROM Customer c 
-WHERE visited_on >= (
-    SELECT DATE_ADD(MIN(visited_on), INTERVAL 6 DAY) 
-    FROM Customer 
-) 
-GROUP BY visited_on 
-ORDER BY visited_on;
+With dates as 
+(
+    select distinct visited_on from customer
+)
+
+select 
+    d.visited_on, 
+    SUM(c.amount) as amount, 
+    ROUND(SUM(c.amount)/7, 2) as average_amount
+from dates d inner join customer c
+on DATEDIFF(d.visited_on, c.visited_on) between 0 and 6
+where DATEDIFF(d.visited_on, (select MIN(visited_on) from customer)) >= 6
+group by d.visited_on
+order by d.visited_on
